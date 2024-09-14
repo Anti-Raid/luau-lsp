@@ -3,16 +3,16 @@
   "displayName": "Luau Language Server",
   "description": "A Language Server Client for Luau",
   "author": "JohnnyMorganz",
-  "publisher": "JohnnyMorganz",
+  "publisher": "AntiRaid",
   "license": "MIT",
   "icon": "assets/icon.png",
-  "homepage": "https://github.com/JohnnyMorganz/luau-lsp",
+  "homepage": "https://github.com/AntiRaid/luau-lsp",
   "repository": {
     "type": "git",
-    "url": "https://github.com/JohnnyMorganz/luau-lsp"
+    "url": "https://github.com/AntiRaid/luau-lsp"
   },
   "bugs": {
-    "url": "https://github.com/JohnnyMorganz/luau-lsp/issues"
+    "url": "https://github.com/AntiRaid/luau-lsp/issues"
   },
   "version": "1.32.4",
   "engines": {
