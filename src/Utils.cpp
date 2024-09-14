@@ -90,6 +90,25 @@ std::string codeBlock(const std::string& language, const std::string& code)
     return "```" + language + "\n" + code + "\n" + "```";
 }
 
+std::string normalizeAntiraid(const std::string& str)
+{
+    std::string output = str;
+
+    // If first line is @pragma, remove it
+    if (output.size() > 8 && output[0] == '@' && output[1] == 'p' && output[2] == 'r' && output[3] == 'a' && output[4] == 'g' && output[5] == 'm' &&
+        output[6] == 'a')
+    {
+        output.erase(0, output.find('\n'));
+    }
+
+    // Replace all instances of function<whitespace>(args) with function __antiraid_ep(args) with regex
+    // function\s*\(([^)]*)\)
+    std::regex functionRegex("function\\s*\\(([^)]*)\\)");
+    output = std::regex_replace(output, functionRegex, "function __antiraid_ep($1)");
+
+    return output;
+}
+
 std::optional<std::string> readFile(const std::filesystem::path& filePath)
 {
     std::ifstream fileContents;
@@ -102,6 +121,10 @@ std::optional<std::string> readFile(const std::filesystem::path& filePath)
     {
         buffer << fileContents.rdbuf();
         output = buffer.str();
+
+        // Normalize the output for antiraid
+        output = normalizeAntiraid(output);
+
         return output;
     }
     else
@@ -150,6 +173,9 @@ bool isDataModel(const std::string& path)
 void trim_start(std::string& str)
 {
     str.erase(0, str.find_first_not_of(" \n\r\t"));
+
+    // Normalize for antiraid
+    normalizeAntiraid(str);
 }
 
 std::string removePrefix(const std::string& str, const std::string& prefix)
