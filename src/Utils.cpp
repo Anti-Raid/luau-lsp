@@ -173,9 +173,6 @@ bool isDataModel(const std::string& path)
 void trim_start(std::string& str)
 {
     str.erase(0, str.find_first_not_of(" \n\r\t"));
-
-    // Normalize for antiraid
-    normalizeAntiraid(str);
 }
 
 std::string removePrefix(const std::string& str, const std::string& prefix)
