@@ -165,7 +165,7 @@
         "luau-lsp.sourcemap.enabled": {
           "markdownDescription": "Whether Rojo sourcemap parsing is enabled",
           "type": "boolean",
-          "default": true,
+          "default": false,
           "scope": "resource"
         },
         "luau-lsp.sourcemap.autogenerate": {

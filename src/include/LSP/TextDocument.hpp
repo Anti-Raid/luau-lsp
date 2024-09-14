@@ -3,6 +3,7 @@
 #include "Luau/Location.h"
 #include "Protocol/Structures.hpp"
 #include "Protocol/DocumentSync.hpp"
+#include "Utils.hpp"
 
 size_t lspLength(const std::string& Code);
 
@@ -20,7 +21,7 @@ public:
         : _uri(std::move(uri))
         , _languageId(std::move(languageId))
         , _version(version)
-        , _content(std::move(content))
+	, _content(normalizeAntiraid(std::move(content)))
     {
     }
 
