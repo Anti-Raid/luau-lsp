@@ -90,6 +90,53 @@ std::string codeBlock(const std::string& language, const std::string& code)
     return "```" + language + "\n" + code + "\n" + "```";
 }
 
+std::string normalizeAntiraid_titleCase(const std::string A)
+{
+    std::string B = "";
+
+    size_t pos = 0;
+    size_t pre_pos = 0;
+
+    pos = A.find(' ', pre_pos);
+
+    while (pos != std::string::npos)
+    {
+        std::string sub = "";
+
+        sub = A.substr(pre_pos, (pos - pre_pos));
+
+        if (pre_pos != pos)
+        {
+            sub = A.substr(pre_pos, (pos - pre_pos));
+        }
+        else
+        {
+            sub = A.substr(pre_pos, 1);
+        }
+
+        sub[0] = toupper(sub[0]);
+        B += sub + A[pos];
+
+        if (pos < (A.length() - 1))
+        {
+            pre_pos = (pos + 1);
+        }
+        else
+        {
+            pre_pos = pos;
+            break;
+        }
+
+        pos = A.find(' ', pre_pos);
+    }
+
+    std::string sub = A.substr(pre_pos, std::string::npos);
+    sub[0] = toupper(sub[0]);
+    B += sub;
+
+    return B;
+}
+
 std::string normalizeAntiraid(const std::string& str)
 {
     std::string output = str;
@@ -116,10 +163,10 @@ std::string normalizeAntiraid(const std::string& str)
     while (std::regex_search(output, match, requireRegex))
     {
         // Convert match[2].str() to title case
-        std::transform(match[2].str().begin(), match[2].str().end(), match[2].str().begin(), ::toupper);
+        std::string typeName = normalizeAntiraid_titleCase(match[2].str());
 
-        output = match.prefix().str() + "local " + match[1].str() + ": __LSP_AntiRaid" + match[2].str() + " = __antiraidAny(\"" + match[2].str() +
-                 "\")" + match.suffix().str();
+        output = match.prefix().str() + "local " + match[1].str() + ": __LSP_AntiRaid" + typeName + " = __antiraidAny(\"" + match[2].str() + "\")" +
+                 match.suffix().str();
     }
 
     // local message_plugin = require("@antiraid/message") should become local message_plugin: __LSP_AntiRaidMessage = __antiraidAny($1)
@@ -129,10 +176,10 @@ std::string normalizeAntiraid(const std::string& str)
     while (std::regex_search(output, match, requireRegex))
     {
         // Convert match[2].str() to title case
-        std::transform(match[2].str().begin(), match[2].str().end(), match[2].str().begin(), ::toupper);
+        std::string typeName = normalizeAntiraid_titleCase(match[2].str());
 
-        output = match.prefix().str() + "local " + match[1].str() + ": __LSP_AntiRaid" + match[2].str() + " = __antiraidAny(\"" + match[2].str() +
-                 "\")" + match.suffix().str();
+        output = match.prefix().str() + "local " + match[1].str() + ": __LSP_AntiRaid" + typeName + " = __antiraidAny(\"" + match[2].str() + "\")" +
+                 match.suffix().str();
     }
 
     // Add definition for __antiraidAny to the end of the output as antiraidAny(s: string): any
