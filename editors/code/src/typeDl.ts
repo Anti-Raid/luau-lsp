@@ -37,8 +37,7 @@ const downloadApiDefinitions = async (context: vscode.ExtensionContext) => {
       },
       async () => {
         return Promise.all([
-          ...[() =>
-            fetch(globalTypesEndpoint())
+          ...[fetch(globalTypesEndpoint())
               .then((r) => r.arrayBuffer())
               .then((data) =>
                 vscode.workspace.fs.writeFile(
