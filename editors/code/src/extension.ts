@@ -158,6 +158,11 @@ const startLanguageServer = async (context: vscode.ExtensionContext) => {
     }
   }
 
+  // Show startup flags in a message box
+  if (args.length > 0) {
+    vscode.window.showInformationMessage(`Luau LSP startup flags: ${args}`);
+  }
+
   const run: Executable = {
     command: vscode.Uri.joinPath(
       context.extensionUri,
