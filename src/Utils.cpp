@@ -201,8 +201,11 @@ std::optional<std::string> readFile(const std::filesystem::path& filePath)
         buffer << fileContents.rdbuf();
         output = buffer.str();
 
-        // Normalize the output for antiraid
-        output = normalizeAntiraid(output);
+        // Normalize the output for antiraid if the file does not end with .d.lua:
+        if (!endsWith(filePath.string(), ".d.lua") && !endsWith(filePath.string(), ".d.luau"))
+        {
+            output = normalizeAntiraid(output);
+        }
 
         return output;
     }
