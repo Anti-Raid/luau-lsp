@@ -16,21 +16,11 @@ const globalTypesEndpoint = () => {
 
 const globalTypesUri = (
   context: vscode.ExtensionContext,
-  mode: "Prod" | "Debug",
 ) => {
-  if (mode === "Prod") {
-    return vscode.Uri.joinPath(
-      context.globalStorageUri,
-      `globalTypes.d.luau`,
-    );
-  } else {
-    return vscode.Uri.joinPath(
-      context.extensionUri,
-      "..",
-      "..",
-      `scripts/globalTypes.d.luau`,
-    );
-  }
+  return vscode.Uri.joinPath(
+    context.globalStorageUri,
+    `globalTypes.d.luau`,
+  );
 };
 
 const apiDocsUri = (context: vscode.ExtensionContext) => {
@@ -52,7 +42,7 @@ const downloadApiDefinitions = async (context: vscode.ExtensionContext) => {
               .then((r) => r.arrayBuffer())
               .then((data) =>
                 vscode.workspace.fs.writeFile(
-                  globalTypesUri(context, "Prod"),
+                  globalTypesUri(context),
                   new Uint8Array(data),
                 ),
               ),
@@ -74,7 +64,7 @@ const updateApiInfo = async (context: vscode.ExtensionContext) => {
         await Promise.all(
           [
             async () =>
-              await utils.exists(globalTypesUri(context, "Prod")),
+              await utils.exists(globalTypesUri(context)),
           ],
         )
       ).some((doesExist) => !doesExist) ||
@@ -404,14 +394,8 @@ export const preLanguageServerStart = async (
   ) {
     await updateApiInfo(context);
     addArg(
-      `--definitions=${globalTypesUri(context, "Prod").fsPath}`,
-      "Prod",
+      `--definitions=${globalTypesUri(context).fsPath}`,
     );
-    addArg(
-      `--definitions=${globalTypesUri(context, "Debug").fsPath}`,
-      "Debug",
-    );
-    addArg(`--docs=${apiDocsUri(context).fsPath}`);
   }
 };
 
