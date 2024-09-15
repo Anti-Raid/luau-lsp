@@ -10,38 +10,25 @@ import * as utils from "./utils";
 
 let pluginServer: Server | undefined = undefined;
 
-const CURRENT_VERSION_TXT =
-  "https://raw.githubusercontent.com/CloneTrooper1019/Roblox-Client-Tracker/roblox/version.txt";
-const API_DOCS =
-  "https://raw.githubusercontent.com/MaximumADHD/Roblox-Client-Tracker/roblox/api-docs/en-us.json";
-
-const SECURITY_LEVELS = [
-  "None",
-  "LocalUserSecurity",
-  "PluginSecurity",
-  "RobloxScriptSecurity",
-];
-
-const globalTypesEndpointForSecurityLevel = (securityLevel: string) => {
-  return `https://raw.githubusercontent.com/JohnnyMorganz/luau-lsp/main/scripts/globalTypes.${securityLevel}.d.luau`;
+const globalTypesEndpoint = () => {
+  return `https://raw.githubusercontent.com/Anti-Raid/luau-lsp/main/scripts/globalTypes.d.luau`;
 };
 
 const globalTypesUri = (
   context: vscode.ExtensionContext,
-  securityLevel: string,
   mode: "Prod" | "Debug",
 ) => {
   if (mode === "Prod") {
     return vscode.Uri.joinPath(
       context.globalStorageUri,
-      `globalTypes.${securityLevel}.d.luau`,
+      `globalTypes.d.luau`,
     );
   } else {
     return vscode.Uri.joinPath(
       context.extensionUri,
       "..",
       "..",
-      `scripts/globalTypes.${securityLevel}.d.luau`,
+      `scripts/globalTypes.d.luau`,
     );
   }
 };
@@ -60,24 +47,16 @@ const downloadApiDefinitions = async (context: vscode.ExtensionContext) => {
       },
       async () => {
         return Promise.all([
-          ...SECURITY_LEVELS.map((level) =>
-            fetch(globalTypesEndpointForSecurityLevel(level))
+          ...[() =>
+            fetch(globalTypesEndpoint())
               .then((r) => r.arrayBuffer())
               .then((data) =>
                 vscode.workspace.fs.writeFile(
-                  globalTypesUri(context, level, "Prod"),
+                  globalTypesUri(context, "Prod"),
                   new Uint8Array(data),
                 ),
               ),
-          ),
-          fetch(API_DOCS)
-            .then((r) => r.arrayBuffer())
-            .then((data) =>
-              vscode.workspace.fs.writeFile(
-                apiDocsUri(context),
-                new Uint8Array(data),
-              ),
-            ),
+          ],
         ]);
       },
     );
@@ -90,25 +69,18 @@ const downloadApiDefinitions = async (context: vscode.ExtensionContext) => {
 
 const updateApiInfo = async (context: vscode.ExtensionContext) => {
   try {
-    const latestVersion = await fetch(CURRENT_VERSION_TXT).then((r) =>
-      r.text(),
-    );
-    const currentVersion = context.globalState.get<string>(
-      "current-api-version",
-    );
     const mustUpdate =
       (
         await Promise.all(
-          SECURITY_LEVELS.map(
-            async (level) =>
-              await utils.exists(globalTypesUri(context, level, "Prod")),
-          ),
+          [
+            async () =>
+              await utils.exists(globalTypesUri(context, "Prod")),
+          ],
         )
       ).some((doesExist) => !doesExist) ||
       !(await utils.exists(apiDocsUri(context)));
 
-    if (!currentVersion || currentVersion !== latestVersion || mustUpdate) {
-      context.globalState.update("current-api-version", latestVersion);
+    if (mustUpdate) {
       return downloadApiDefinitions(context);
     }
   } catch (err) {
@@ -430,15 +402,13 @@ export const preLanguageServerStart = async (
     platformConfig.get<string>("type") === "roblox" &&
     typesConfig.get<boolean>("roblox")
   ) {
-    const securityLevel =
-      typesConfig.get<string>("robloxSecurityLevel") ?? "PluginSecurity";
     await updateApiInfo(context);
     addArg(
-      `--definitions=${globalTypesUri(context, securityLevel, "Prod").fsPath}`,
+      `--definitions=${globalTypesUri(context, "Prod").fsPath}`,
       "Prod",
     );
     addArg(
-      `--definitions=${globalTypesUri(context, securityLevel, "Debug").fsPath}`,
+      `--definitions=${globalTypesUri(context, "Debug").fsPath}`,
       "Debug",
     );
     addArg(`--docs=${apiDocsUri(context).fsPath}`);

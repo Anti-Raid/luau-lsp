@@ -13,7 +13,7 @@ import {
   registerComputeCompilerRemarks,
 } from "./bytecode";
 
-import * as roblox from "./roblox";
+import * as typeDl from "./typeDl";
 import * as utils from "./utils";
 
 export type PlatformContext = { client: LanguageClient | undefined };
@@ -69,7 +69,7 @@ const startLanguageServer = async (context: vscode.ExtensionContext) => {
     }
   };
 
-  await roblox.preLanguageServerStart(platformContext, context, addArg);
+  await typeDl.preLanguageServerStart(platformContext, context, addArg);
 
   const typesConfig = vscode.workspace.getConfiguration("luau-lsp.types");
 
@@ -220,7 +220,7 @@ const startLanguageServer = async (context: vscode.ExtensionContext) => {
 export async function activate(context: vscode.ExtensionContext) {
   console.log("Luau LSP activated");
 
-  await roblox.onActivate(platformContext, context);
+  await typeDl.onActivate(platformContext, context);
 
   context.subscriptions.push(
     vscode.commands.registerCommand("luau-lsp.reloadServer", async () => {
@@ -267,12 +267,12 @@ export async function activate(context: vscode.ExtensionContext) {
 
   await startLanguageServer(context);
 
-  await roblox.postLanguageServerStart(platformContext, context);
+  await typeDl.postLanguageServerStart(platformContext, context);
 }
 
 export async function deactivate() {
   return Promise.allSettled([
-    ...roblox.onDeactivate(),
+    ...typeDl.onDeactivate(),
     client?.stop(),
     clientDisposables.map((disposable) => disposable.dispose()),
   ]);

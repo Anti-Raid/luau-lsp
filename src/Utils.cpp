@@ -106,6 +106,38 @@ std::string normalizeAntiraid(const std::string& str)
     std::regex functionRegex("function\\s*\\(([^)]*)\\)");
     output = std::regex_replace(output, functionRegex, "function __antiraid_ep($1)");
 
+    // To better handle requires we need to do some minor parsing
+    // local message_plugin = require "@antiraid/message" should become local message_plugin: __LSP_AntiRaidMessage = __antiraidAny($1)
+    // To do so, keep finding all requires and replace them
+    std::regex requireRegex("local\\s+([^\\s]+)\\s*=\\s*require\\s+\"@antiraid/([^\\s]+)\"");
+
+    std::smatch match;
+
+    while (std::regex_search(output, match, requireRegex))
+    {
+        // Convert match[2].str() to title case
+        std::transform(match[2].str().begin(), match[2].str().end(), match[2].str().begin(), ::toupper);
+
+        output = match.prefix().str() + "local " + match[1].str() + ": __LSP_AntiRaid" + match[2].str() + " = __antiraidAny(\"" + match[2].str() +
+                 "\")" + match.suffix().str();
+    }
+
+    // local message_plugin = require("@antiraid/message") should become local message_plugin: __LSP_AntiRaidMessage = __antiraidAny($1)
+    // just as above (but with different regex)
+    requireRegex = std::regex("local\\s+([^\\s]+)\\s*=\\s*require\\s*\\(\"@antiraid/([^\\s]+)\"\\)");
+
+    while (std::regex_search(output, match, requireRegex))
+    {
+        // Convert match[2].str() to title case
+        std::transform(match[2].str().begin(), match[2].str().end(), match[2].str().begin(), ::toupper);
+
+        output = match.prefix().str() + "local " + match[1].str() + ": __LSP_AntiRaid" + match[2].str() + " = __antiraidAny(\"" + match[2].str() +
+                 "\")" + match.suffix().str();
+    }
+
+    // Add definition for __antiraidAny to the end of the output as antiraidAny(s: string): any
+    output += "\nfunction __antiraidAny(s: string): any\nreturn s\nend";
+
     return output;
 }
 
